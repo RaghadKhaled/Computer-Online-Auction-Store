@@ -1,0 +1,162 @@
+create table Client (
+  
+Client_id  char(8) not null,
+
+Fname    varchar(15) not null, 
+
+Lname    varchar(15) not null,
+
+Email   varchar(30) not null,
+
+Client_password varchar(20) not null check (length(Client_password) >=8 ),
+  
+Client_address  varchar(50) not null,
+
+
+primary key (Client_id)
+
+);
+
+-----
+
+create table Client_phone_numbers (
+
+Client_id char(8) not null,
+
+Phone_number char(10) not null,
+
+primary key (Client_id, Phone_number),
+
+unique (Phone_number),
+
+foreign key (Client_id) references Client(Client_id) on delete set null
+
+);
+
+-----
+
+create table Supplier (
+  
+Client_id  char(8) not null,
+Bank_account_number char(10) not null check (length(Bank_account_number) = 10),
+primary key (Client_id),
+unique (Bank_account_number),
+foreign key (Client_id) references Client(Client_id)
+
+
+); 
+
+-----
+
+create table Purchaser (
+
+Client_id  char(8) not null,
+Billing_address varchar(50) not null,
+primary key (Client_id),
+foreign key (Client_id) references Client(Client_id)
+);
+
+---
+
+create table Item (
+
+Item_id char(8) not null,
+Item_name varchar(15) not null,
+Item_used_months int not null,
+Item_manufacturer_name varchar(15) not null,
+Item_description varchar(50) not null,
+Starting_bid_price float not null,
+Start_date_auction date not null,
+End_date_auction date not null,
+Supplier_id char(8) not null,
+
+primary key (Item_id),
+foreign key (Supplier_id) references Supplier(Client_id),
+constraint CHK_end_date check (Start_date_auction <= End_date_auction)
+
+);
+
+----
+
+create table Item_languages (
+
+Item_id char(8) not null,
+Language varchar(7) not null check(Language = 'Arabic' or Language = 'English'),
+primary key (Item_id,Language),
+foreign key (Item_id) references Item(Item_id)
+
+
+);
+
+-----
+
+create table Printer (
+Item_id char(8) not null,
+Is_wireless varchar(3) not null check(Is_wireless='Yes' or Is_wireless='No'),
+Is_contain_scanner varchar(3) not null check(Is_contain_scanner='Yes' or Is_contain_scanner='No'),
+Inkjet varchar(3) not null check(Inkjet='Yes' or Inkjet='No'),
+primary key (Item_id),
+foreign key (Item_id) references Item(Item_id) on delete cascade enable
+
+);
+
+---
+
+create table Computer (
+  
+Item_id char(8) not null,
+Speed varchar(7) not null,
+Storage_device varchar(3) not null check(Storage_device = 'HDD' or Storage_device = 'SSD'),
+RAM varchar(4) not null,
+
+primary key (Item_id),
+foreign key (Item_id) references Item(Item_id) 
+);
+
+---
+
+create table Bid (
+  
+Bid_id char(8) not null,
+Client_id char(8) not null,
+Bid_date date not null,
+Proposed_price float not null,
+Item_id char(8) not null,
+
+
+primary key (Bid_id) ,
+foreign key (Client_id) references Purchaser(Client_id),
+foreign key (Item_id) references Item(Item_id) on delete cascade enable
+
+
+);
+
+----
+
+create table Billing (
+
+Bill_id char(8) not null,
+Billing_date date not null,
+Bid_id char(8) not null,
+
+primary key (Bill_id),
+foreign key (Bid_id) references Bid(Bid_id)
+
+);
+
+----
+
+create table Feedback (
+  
+Feedback_description varchar(100) not null,
+Client_id char(8) not null,
+Bill_id char(8) not null,
+Rating int check (Rating>=1 and Rating<=5),
+
+primary key (Feedback_description, Client_id, Bill_id),
+
+foreign key (Bill_id) references Billing(Bill_id),
+
+foreign key (Client_id) references Client(Client_id)
+
+);
